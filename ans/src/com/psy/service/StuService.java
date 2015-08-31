@@ -87,7 +87,7 @@ public class StuService {
 						sessionTea.write(data);
 						session.write(data);
 					}else if(type.equals("singleAns")){
-						logger.debug("其他学生端评论成功!");
+						logger.debug("常规答题成功!");
 						stu_option = session.getAttribute(Constants.SINGLEANS,"NONE").toString();
 						String data = "HNZZ\t&StuInfos\t&" 
 								+stu_paduuid+"\t&" 

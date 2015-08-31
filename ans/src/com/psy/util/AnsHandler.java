@@ -22,10 +22,13 @@ import org.apache.mina.core.session.IoSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.psy.entity.Student;
 import com.psy.service.GroupService;
 import com.psy.service.RecordService;
 import com.psy.service.StuService;
+import com.psy.service.StudentService;
 import com.psy.service.TeaService;
+import com.psy.service.TeacherService;
 import com.psy.servlet.Slf4j;
 import com.psy.servlet.UploadServlet;
 
@@ -50,7 +53,7 @@ public class AnsHandler extends IoHandlerAdapter{
 	 *  logger  
 	 *  TODO(引入slf4j日志)
 	*/
-	public static final Logger logger = LoggerFactory.getLogger(Slf4j.class);
+	public static final Logger logger = LoggerFactory.getLogger(AnsHandler.class);
 	
 	
 	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -66,10 +69,10 @@ public class AnsHandler extends IoHandlerAdapter{
 	 */
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {
-		logger.debug("新连接建立");
+		logger.info("新连接建立");
 		Date nowTime = new Date();
 		String time = dateFormat.format(nowTime);
-		logger.debug("sessionCreated:"+time+"=IDLE " +"sessionCreated" + session.getId());
+		logger.info("sessionCreated:"+time+"=IDLE " +"sessionCreated" + session.getId());
 		super.sessionCreated(session);
 	}
 	
@@ -78,12 +81,12 @@ public class AnsHandler extends IoHandlerAdapter{
 	 */
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		logger.debug("新连接打开");
+		logger.info("新连接打开");
 		session.setAttribute("opentime", dateFormat.format(new Date()));
 		Constants.sessions.add(session);
 		Date nowTime = new Date();
 		String time = dateFormat.format(nowTime);
-		logger.debug("sessionOpened="+time);
+		logger.info("sessionOpened="+time);
 	}
 
 	/**
@@ -99,13 +102,16 @@ public class AnsHandler extends IoHandlerAdapter{
 	@Override
 	public void messageReceived(IoSession session, Object message)
 			throws Exception {
-		logger.debug("收到新消息");
+		logger.info("收到新消息");
 		String str = message.toString();
+		logger.debug("接收数据："+str);
 		String[] messageArr = str.split("\t&");
-		logger.debug(messageArr[2]+messageArr[3]+messageArr[4]+messageArr[5]+messageArr[6]);
+		logger.debug("接收数据长度："+messageArr.length);
+		logger.debug(messageArr[2]+messageArr[3]+messageArr[4]+messageArr[5]+"--6--"+messageArr[6]);
 		if(messageArr[0].equals("HNZZ")){
 			String type = messageArr[2];
 			if(messageArr[1].equals("stu")){
+				//学生端数据解析
 				if(type.equals("login")){
 					for(IoSession sessionStu:Constants.sessionStus){
 						String paduuid = sessionStu.getAttribute(Constants.PADUUID,"NONE").toString();
@@ -114,6 +120,18 @@ public class AnsHandler extends IoHandlerAdapter{
 							Constants.sessionStus.remove(sessionStu);
 							logger.debug("移除Constants.sessions中已有session"+paduuid);
 						}
+					}
+					String stuNo = messageArr[6];
+					if(!StringHelper.isEmptyObject(stuNo)){
+						Student student = StudentService.searchData(stuNo);
+						int sex = Integer.valueOf(student.getSex());
+						int sexgroup = sex+1;
+						session.setAttribute(Constants.SEX,student.getSex());
+						session.setAttribute(Constants.SEXGROUP,String.valueOf(sexgroup));
+						session.setAttribute(Constants.NAME1, student.getUserName());
+						session.setAttribute(Constants.YUWEN, student.getYuwen());
+						session.setAttribute(Constants.SHUXUE, student.getShuxue());
+						session.setAttribute(Constants.YINGYU, student.getYingyu());
 					}
 					session.setAttribute(Constants.ROLE,"stu");
 					session.setAttribute(Constants.NAME, messageArr[6]);
@@ -129,6 +147,7 @@ public class AnsHandler extends IoHandlerAdapter{
 				}
 				StuService.sendToTeacher(session,type);
 			}else if(messageArr[1].equals("tea")){
+				//教师端数据解析
 				if(type.equals("login")){
 					Boolean bl = true;
 					for(IoSession sessionTea:Constants.sessionTeas){
@@ -146,7 +165,7 @@ public class AnsHandler extends IoHandlerAdapter{
 					session.setAttribute(Constants.NAME, messageArr[6]);
 					session.setAttribute(Constants.PADUUID, messageArr[5]);
 					if(bl){
-						String rand = RandomCode.NextInt(100000,999999);
+						String rand = RandomCode.NextInt(1000,9999);
 						session.setAttribute(Constants.RANDNUM,rand);
 						logger.debug("rand:"+rand);
 					}
@@ -157,15 +176,29 @@ public class AnsHandler extends IoHandlerAdapter{
 					session.setAttribute(Constants.QUES,messageArr[3]);
 				}else if(type.equals("ans")){
 					session.setAttribute(Constants.ANS,messageArr[3]);
+					session.setAttribute(Constants.SELUUID,messageArr[8]);
+					session.setAttribute(Constants.STUTYPE,messageArr[7]);
 				}else if(type.equals("exit")){
 					session.setAttribute(Constants.LOGINTYPE,type);
 				}else if(type.equals("singleAns")){
 					session.setAttribute(Constants.SINGLEANSUUID,messageArr[3]);
-				}else if(type.equals("singleUpload")){
-					session.setAttribute(Constants.SINGLEUPUUID,messageArr[3]);
+				}else if(type.equals("upload")){
+					System.out.println("--7--"+messageArr[7]);
+					session.setAttribute(Constants.UPUUID,messageArr[3]);
+					session.setAttribute(Constants.STUTYPE,messageArr[7]);
+				}else if(type.equals("singleSel")){
+					System.out.println("--8--"+messageArr[8]);
+					session.setAttribute(Constants.QUES,messageArr[3]);
+					session.setAttribute(Constants.SELUUID,messageArr[8]);
+					session.setAttribute(Constants.STUTYPE,messageArr[7]);
 				}else if(type.equals("degree")){
 					session.setAttribute(Constants.DEGREE,messageArr[3]);
+				}else if(type.equals("estimate")){
+					//常规答题评价
+					session.setAttribute(Constants.ESTIMATE,messageArr[3]);
+					session.setAttribute(Constants.SELUUID,messageArr[8]);
 				}else if(type.equals("group")){
+					//随机分组
 					int group = Integer.valueOf(messageArr[3]);
 					String randNo = messageArr[4];
 					session.setAttribute(Constants.GROUP,messageArr[3]);
@@ -178,14 +211,30 @@ public class AnsHandler extends IoHandlerAdapter{
 					}
 					//进行分组
 					GroupService.giveGroup(sessionStus1,group);
-				}else if(type.equals("count")){
-					session.setAttribute(Constants.COUNT,messageArr[3]);
+				}else if(type.equals("subject")){
+					//科目成绩分组
+					int group = Integer.valueOf(messageArr[3]);//几组
+					String randNo = messageArr[4];
+					session.setAttribute(Constants.GROUP,messageArr[3]);
+					Set<IoSession> sessionStus1 = Collections.synchronizedSet(new HashSet<IoSession>());
+					for(IoSession stu:Constants.sessionStus){
+						String randNo1 = stu.getAttribute(Constants.RANDNUM,"NONE").toString();
+						if(randNo.equals(randNo1)){
+							sessionStus1.add(stu);
+						}
+					}
+					//查询教师的科目类型
+					String subType = TeacherService.searchSub(messageArr[6]);
+					//进行分组
+					GroupService.giveSubGroup(sessionStus1,group,subType);
+				}else{
+					session.setAttribute(Constants.OPENPARAM,messageArr[3]);
 				}
 				Constants.sessionTeas.add(session);
 				TeaService.sendAllStudent(session,type);
 			}
 		}
-		logger.debug(Constants.sessionTeas.size()+"@@"+Constants.sessions.size());
+		logger.info(Constants.sessionTeas.size()+"@@"+Constants.sessions.size());
 	}
 	
 	
@@ -196,7 +245,7 @@ public class AnsHandler extends IoHandlerAdapter{
 	public void sessionClosed(IoSession session) throws Exception {
 		String role = session.getAttribute(Constants.ROLE,"NONE").toString();
 		String loginType = session.getAttribute(Constants.LOGINTYPE,"NONE").toString();
-		logger.debug("连接被关闭");
+		logger.info("连接被关闭");
 		if ("stu".equals(role)) {
 			StuService.outStu(session);
 			Constants.sessionStus.remove(session);
@@ -222,7 +271,7 @@ public class AnsHandler extends IoHandlerAdapter{
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status)
 			throws Exception {
-		logger.debug("连接闲置");
+		logger.info("连接闲置");
 //		System.out.println("IDLE sessionIdle " 
 //				//sessionIdle被触发的次数
 //				+ session.getIdleCount(status) + " !! "

@@ -54,7 +54,7 @@ public class RandomCode {
 	public static void main(String[] args) {
 		List<String> randList = new ArrayList<String>();
 		for (int i = 0; i < 10000; i++) {
-			randList.add(NextInt(100000,999999));
+			randList.add(NextInt(1000,9999));
 		}
 		System.out.println(randList);
 		String temp = "";

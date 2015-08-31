@@ -11,7 +11,10 @@
 package com.psy.service;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.mina.core.session.IoSession;
 
@@ -35,30 +38,30 @@ import com.psy.util.Constants;
 public class GroupService {
 	
 	public static final Set<String> stuAll = new HashSet<String>(){{
-		 add("a");
-		 add("b");
-		 add("c");
-		 add("d");
-		 add("e");
-		 add("f");
-		 add("g");
-		 add("h");
-		 add("i");
-		 add("j");
-		 add("k");
-		 add("l");
-		 add("m");
-		 add("n");
-		 add("o");
-		 add("p");
-		 add("q");
-		 add("r");
-		 add("s");
-		 add("t");
+		 add("0");
+		 add("2");
+		 add("1");
+		 add("3");
+		 add("4");
+		 add("5");
+		 add("6");
+		 add("7");
+		 add("8");
+		 add("9");
+		 add("11");
+		 add("10");
+		 add("12");
+		 add("13");
+		 add("14");
+		 add("15");
+		 add("16");
+		 add("17");
+		 add("18");
+		 add("19");
 	}};
 	
 	/**
-	 * TODO(学生分组)
+	 * TODO(学生随机分组)
 	 * @param sessionStus1	需要分组的学生信息set集合
 	 * @param groupNo	分为几组
 	*/
@@ -95,8 +98,49 @@ public class GroupService {
 	}
 	
 	
+	/**
+	 * TODO(科目成绩排序分组)
+	 * @param sessionStus1	需要分组的学生信息set集合
+	 * @param groupNo	分为几组
+	 * @param subType	科目类型
+	*/
+	public static void giveSubGroup(Set<IoSession> sessionStus1,int groupNo,String subType){
+		SortedSet<IoSession> ssa= new TreeSet<IoSession>();
+		if(subType.equals("00A")){//语文
+			ssa=new TreeSet<IoSession>(new SortByYuwen());  //创建一个按照Id排序的TreeSet实例a  
+		}
+		ssa.addAll(sessionStus1);
+		//数组长度20
+		int len = ssa.size();
+		//初始每组长度2
+		int size1 = len/groupNo;
+		//额外每组长度3
+		int size2 = size1+1;
+		//余数3
+		int size3 = len%groupNo;
+		//标识变量
+		int flag = 0;
+		int flag1 = 0;
+		int flag2 = 0;
+		int flag3 = 0;
+		for(IoSession session_stu:ssa){
+			flag1 = flag/size2;
+			if(flag1>=size3){
+				flag2 = (flag-size3)/size1;
+				flag2 = flag2+1;
+				session_stu.setAttribute(Constants.GROUP,flag2);
+			}else{
+				flag3 = flag1+1;
+				session_stu.setAttribute(Constants.GROUP,flag3);
+			}
+			//累加flag，标识set数组长度
+			flag++;
+			Constants.sessionStus.add(session_stu);
+		}
+	}
+	
 	public static void main(String[] args) {
-//		giveGroup(4);
+//		giveSubGroup(stuAll,4);
 //		System.out.println(stuAll.size());
 	}
 

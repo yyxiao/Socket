@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.psy.util.Constants;
+import com.psy.util.StringHelper;
 
 /**
  * ClassName:UploadServlet
@@ -38,7 +39,7 @@ public class UploadServlet extends HttpServlet {
 	 *  logger  
 	 *  TODO(引入slf4j日志)
 	*/
-	public static final Logger logger = LoggerFactory.getLogger(Slf4j.class);
+	public static final Logger logger = LoggerFactory.getLogger(UploadServlet.class);
 	
 	private static final long serialVersionUID = 1L;
        
@@ -70,6 +71,7 @@ public class UploadServlet extends HttpServlet {
 		String randnum = request.getParameter("randnum");
 		String stu_uuid = request.getParameter("stu_uuid");
 		String tea_uuid = request.getParameter("tea_uuid");
+		String type = request.getParameter("type");
 		
 		String fileUrl = "";
 		
@@ -134,35 +136,122 @@ public class UploadServlet extends HttpServlet {
 		String data = "";
 		
 		logger.debug("发送具体地址给客户端！");
-		for(IoSession sessionStu:Constants.sessionStus){
-			String stu_paduuid = sessionStu.getAttribute(Constants.PADUUID,"NONE").toString();
-			if(stu_uuid.equals(stu_paduuid)){
-				data = "HNZZ\t&StuInfos\t&"
-						+stu_paduuid+"\t&"
-						+randnum+"\t&"
-						+fileUrl+"\t&"
-						+tea_uuid+"\t&"
-						+stu_uuid+"\t&"
-						+"END\n";
-				sessionStu.write(data);
+//		for(IoSession sessionStu:Constants.sessionStus){
+//			String stu_randnum = sessionStu.getAttribute(Constants.RANDNUM,"NONE").toString();
+//			String stu_paduuid = sessionStu.getAttribute(Constants.PADUUID,"NONE").toString();
+//			if(randnum.equals(stu_randnum)){
+//				data = "HNZZ\t&TeaInfos\t&"
+//						+stu_paduuid+"\t&"
+//						+randnum+"\t&"
+//						+fileUrl+"\t&"
+//						+tea_uuid+"\t&"
+//						+stu_uuid+"\t&"
+//						+"END\n";
+//				sessionStu.write(data);
+//			}
+//			logger.debug("上传图片发送学生端数据："+data);
+//		}
+		if(StringHelper.isEmptyObject(type)){
+			for(IoSession sessionTea:Constants.sessionTeas){
+				String tea_paduuid = sessionTea.getAttribute(Constants.PADUUID,"NONE").toString();
+				if(tea_uuid.equals(tea_paduuid)){
+					data = "HNZZ\t&TeaInfos\t&"
+							+tea_paduuid+"\t&"
+							+randnum+"\t&"
+							+fileUrl+"\t&"
+							+tea_uuid+"\t&"
+							+stu_uuid+"\t&"
+							+"END\n";
+					sessionTea.write(data);
+				}
+				logger.debug("上传图片发送教师端数据："+data);
 			}
-			logger.debug("上传图片发送学生端数据："+data);
-		}
-		for(IoSession sessionTea:Constants.sessionTeas){
-			String tea_paduuid = sessionTea.getAttribute(Constants.PADUUID,"NONE").toString();
-			if(tea_uuid.equals(tea_paduuid)){
-				data = "HNZZ\t&StuInfos\t&"
-						+tea_paduuid+"\t&"
-						+randnum+"\t&"
-						+fileUrl+"\t&"
-						+tea_uuid+"\t&"
-						+stu_uuid+"\t&"
-						+"END\n";
-				sessionTea.write(data);
+		}else{
+			//发布素材-单人
+			if(type.equals(Constants.SINGLESTU)){//发布素材-单人
+				for(IoSession sessionStu:Constants.sessionStus){
+					String stu_paduuid = sessionStu.getAttribute(Constants.PADUUID,"NONE").toString();
+					if(stu_uuid.equals(stu_paduuid)){
+						data = "HNZZ\t&TeaInfos\t&"
+								+stu_uuid+"\t&"
+								+randnum+"\t&"
+								+fileUrl+"\t&"
+								+tea_uuid+"\t&"
+								+stu_uuid+"\t&"
+								+"END\n";
+						sessionStu.write(data);
+					}
+					logger.debug("发布素材发送学生端数据(单人)："+data);
+				}
+			}else if(type.equals(Constants.MANYSTU)){//发布素材-多人
+				String[] stu_uuidArray = null;  
+				stu_uuidArray = stu_uuid.split(",");
+	    		for (int i = 0; i < stu_uuidArray.length; i++) {
+	    			String stuuuid = stu_uuidArray[i];
+	    			for(IoSession sessionStu:Constants.sessionStus){
+	    				String stu_paduuid = sessionStu.getAttribute(Constants.PADUUID,"NONE").toString();
+	    				if(stuuuid.equals(stu_paduuid)){
+	    					data = "HNZZ\t&TeaInfos\t&"
+	    							+stu_paduuid+"\t&"
+	    							+randnum+"\t&"
+	    							+fileUrl+"\t&"
+	    							+tea_uuid+"\t&"
+	    							+stu_paduuid+"\t&"
+	    							+"END\n";
+	    					sessionStu.write(data);
+	    				}
+	    				logger.debug("发布素材发送学生端数据(多人)："+data);
+	    			}
+	    		}
+			}else if(type.equals(Constants.ALLSTU)){//发布素材-全班
+				for(IoSession sessionStu:Constants.sessionStus){
+					String stu_paduuid = sessionStu.getAttribute(Constants.PADUUID,"NONE").toString();
+					String stu_randnum = sessionStu.getAttribute(Constants.RANDNUM,"NONE").toString();
+					if(randnum.equals(stu_randnum)){
+						data = "HNZZ\t&TeaInfos\t&"
+								+stu_paduuid+"\t&"
+								+randnum+"\t&"
+								+fileUrl+"\t&"
+								+tea_uuid+"\t&"
+								+stu_paduuid+"\t&"
+								+"END\n";
+						sessionStu.write(data);
+					}
+					logger.debug("发布素材发送学生端数据(全班)："+data);
+				}
+			}else if(type.equals(Constants.GROUPSTU)){//发布素材-分组
+    			for(IoSession sessionStu:Constants.sessionStus){
+    				String stu_group = sessionStu.getAttribute(Constants.GROUP,"NONE").toString();
+    				String stu_paduuid = sessionStu.getAttribute(Constants.PADUUID,"NONE").toString();
+    				if(stu_uuid.equals(stu_group)){
+    					data = "HNZZ\t&TeaInfos\t&"
+    							+stu_paduuid+"\t&"
+    							+randnum+"\t&"
+    							+fileUrl+"\t&"
+    							+tea_uuid+"\t&"
+    							+stu_uuid+"\t&"
+    							+"END\n";
+    					sessionStu.write(data);
+    				}
+    				logger.debug("发布素材发送学生端数据(分组)："+data);
+    			}
+			}else{//上传图片
+				for(IoSession sessionTea:Constants.sessionTeas){
+					String tea_paduuid = sessionTea.getAttribute(Constants.PADUUID,"NONE").toString();
+					if(tea_uuid.equals(tea_paduuid)){
+						data = "HNZZ\t&TeaInfos\t&"
+								+tea_paduuid+"\t&"
+								+randnum+"\t&"
+								+fileUrl+"\t&"
+								+tea_uuid+"\t&"
+								+stu_uuid+"\t&"
+								+"END\n";
+						sessionTea.write(data);
+					}
+					logger.debug("上传图片发送教师端数据："+data);
+				}
 			}
-			logger.debug("上传图片发送教师端数据："+data);
 		}
-		
 	}
 
 }
