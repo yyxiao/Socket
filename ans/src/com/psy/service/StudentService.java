@@ -35,7 +35,7 @@ public class StudentService {
 	*/
 	public static Student searchData(String stuNo){
 		//填写sql语句
-		sql = "select * from student where user_no = '"+stuNo+"' LIMIT 1";
+		sql = "select * from student where stu_no = '"+stuNo+"' LIMIT 1";
 		db1 = new DBHelper(sql);
 		Student student = new Student();
 		try {
@@ -47,9 +47,9 @@ public class StudentService {
 					student.setUserNo(resultSet.getString(2));
 					student.setUserName(resultSet.getString(3));
 					student.setSex(resultSet.getString(4));
-					student.setYuwen(resultSet.getString(10));
-					student.setShuxue(resultSet.getString(11));
-					student.setYingyu(resultSet.getString(12));
+					student.setYuwen(resultSet.getString(11));
+					student.setShuxue(resultSet.getString(12));
+					student.setYingyu(resultSet.getString(13));
 				}
 			}
 		} catch (SQLException e) {

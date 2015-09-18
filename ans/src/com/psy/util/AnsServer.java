@@ -41,12 +41,12 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
  *
  */ 
 public class AnsServer implements ServletContextListener{
-	
+	// 实现其中的销毁函数  
 	@Override
 	public void contextDestroyed(ServletContextEvent event) {
 		event.getServletContext().log("监听结束"); 
 	}
-
+	// 实现其中的初始化函数，当有事件发生时即触发
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		// 创建一个非阻塞的server端的Socket

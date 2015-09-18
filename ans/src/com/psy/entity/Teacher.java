@@ -14,11 +14,27 @@ import java.io.Serializable;
 
  
 public class Teacher implements Serializable{
-	
+	//ID
+	private String teaId;
+	//教师No
+	private String teaNo;
 	//姓名
 	private String teaName;
 	//科目
 	private String subject;
+	
+	public String getTeaId() {
+		return teaId;
+	}
+	public void setTeaId(String teaId) {
+		this.teaId = teaId;
+	}
+	public String getTeaNo() {
+		return teaNo;
+	}
+	public void setTeaNo(String teaNo) {
+		this.teaNo = teaNo;
+	}
 	public String getTeaName() {
 		return teaName;
 	}

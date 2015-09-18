@@ -34,6 +34,18 @@ import org.apache.mina.core.session.IoSession;
  */ 
 public class Constants {
 	
+//	/** 图片存储地址 */
+//	public static final String UPLOADURL = "D://ans/";
+//	
+//	/** 图片发布地址 */
+//	public static final String FILEURL = "http://192.168.1.100/pic/";
+	
+//	/** 图片存储地址 */
+//	public static final String UPLOADURL = "D://WebResource/ans/";
+//	
+//	/** 图片发布地址 */
+//	public static final String FILEURL = "http://121.43.228.58:30002/pic/";
+	
 	/** 图片存储地址 */
 	public static final String UPLOADURL = "F://HNZZ/";
 	
@@ -49,7 +61,8 @@ public class Constants {
 	/** 随机数集合 */
 	public static final List<String> randList = new ArrayList<String>();
 	
-	/** 定义服务端监听端口 */
+//	/** 定义服务端监听端口 */
+//	public static final int PORT = 30003;
 	public static final int PORT = 9999;
 	
 	/** pad端唯一标识码 */
@@ -57,9 +70,9 @@ public class Constants {
 	/** 角色 */
 	public static final String ROLE = "role";
 	/** 姓名 */
-	public static final String NAME1 = "name1";
-	/** 学号 */
 	public static final String NAME = "name";
+	/** 学号 */
+	public static final String NO = "no";
 	/** 答案 */
 	public static final String ANS = "ans";
 	/** 问题 */
@@ -72,10 +85,12 @@ public class Constants {
 	public static final String STUTYPE = "stutype";
 	/** 随机数 */
 	public static final String RANDNUM = "randnum";
-	/** 单人答题学生uuid  */
-	public static final String SINGLEANSUUID = "singleAnsUuid";
+	/** 答题学生uuid  */
+	public static final String ANSUUID = "ansUuid";
+	/** 答题学生no  */
+	public static final String ANSNO = "ansNo";
 	/** 单人答题选项  */
-	public static final String SINGLEANS = "singleAns";
+	public static final String USUALANS = "usualAns";
 	/** 单选  */
 	public static final String SINGLESEL = "singleSel";
 	/** 单选学生uuid  */
@@ -84,10 +99,18 @@ public class Constants {
 	public static final String UPUUID = "uploadUuid";
 	/** 上传图片虚拟地址  */
 	public static final String SINGLEUPURL = "singleUploadUrl";
+	/** 举手答题 */
+	public static final String HANDSUP = "handsup";
 	/** 题目难易度 */
 	public static final String DEGREE = "degree";
 	/** 进行评价 */
 	public static final String ESTIMATE = "estimate";
+	/** 通用评价 */
+	public static final String ASSESS = "assess";
+	/** 学生互评（撒花，鸡蛋） */
+	public static final String PEERASS = "peerAss";
+	/** 同组互评 */
+	public static final String GROUPASS = "groupAss";
 	/** 通用参数(统计成绩、转发url)*/
 	public static final String OPENPARAM = "openparam";
 	/** 登录状态 */
@@ -95,7 +118,7 @@ public class Constants {
 	/** 登录信息 */
 	public static final String LOGININFO= "logininfo";
 	
-	//学生
+	//学科
 	/** 性别 */
 	public static final String SEX= "sex";
 	/** 语文 */
@@ -105,6 +128,13 @@ public class Constants {
 	/** 英语 */
 	public static final String YINGYU= "yingyu";
 
+	//下课统计
+	/** 学生统计 */
+	public static final String STUCOUNT= "stuCount";
+	/** 教师统计 */
+	public static final String TEACOUNT= "teaCount";
+
+	
 	
 	//连接池
 	/** 所有客户连接池列表 */
